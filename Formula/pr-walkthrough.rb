@@ -9,10 +9,15 @@ class PrWalkthrough < Formula
 
   desc "Narrated, browser-based walkthrough of a GitHub pull request"
   homepage "https://github.com/mburgs/pr-walkthrough"
-  url "https://github.com/mburgs/homebrew-pr-walkthrough/releases/download/v2026.07.09.171736/pr_walkthrough-2026.07.09.171736.whl"
-  version "2026.07.09.171736"
-  sha256 "623e0a4dc5b82aa85fa2403d3bc840983a89c655b52709998c487cd61ddc6122"
+  url "https://github.com/mburgs/homebrew-pr-walkthrough/releases/download/v2026.07.12.160757/pr_walkthrough_backend-0.1.0-py3-none-any.whl", using: :nounzip
+  version "2026.07.12.160757"
+  sha256 "9d33039a8ea9cf8d4f4d6432a8a2237a031540c217e52e7ad2d1128b48195947"
   license "MIT"
+
+  bottle do
+    root_url "https://github.com/mburgs/homebrew-pr-walkthrough/releases/download/v2026.07.12.160757"
+    sha256 cellar: :any_skip_relocation, arm64_sonoma: "2cac614729ea10abc3e6ad745863302db6a837bc506c620aff9bc8583947cf8a"
+  end
 
   # Apple-Silicon-only: local STT runs on MLX, which ships arm64-only wheels
   # and has no fallback engine (the app hard-fails at startup otherwise).
@@ -21,12 +26,17 @@ class PrWalkthrough < Formula
   depends_on :macos
 
   def install
-    # Install the bundled wheel (its built frontend is packaged inside, so no
-    # Node is needed at runtime) into an isolated virtualenv. `cached_download`
-    # is the downloaded wheel file; pip pulls the third-party deps from PyPI.
+    # Source fallback (used only when no matching bottle is available). Create
+    # the virtualenv, then install the wheel WITH its PyPI dependencies. We do
+    # NOT use Homebrew's `venv.pip_install`: it forces `--no-deps
+    # --no-binary=:all:` (the resource-vendoring model), which skips deps and
+    # source-builds everything — impossible for the mlx/torch stack. Invoking
+    # pip directly resolves deps from PyPI as prebuilt wheels. `:nounzip` (on
+    # the url) keeps the .whl staged as a file rather than unzipping it.
     virtualenv_create(libexec, "python3.13")
-    system libexec/"bin/pip", "install", "--upgrade", "pip"
-    system libexec/"bin/pip", "install", cached_download
+    system Formula["python@3.13"].opt_bin/"python3.13", "-m", "pip",
+           "--python=#{libexec}/bin/python", "install", "--verbose",
+           Dir["#{buildpath}/*.whl"].first
     bin.install_symlink Dir["#{libexec}/bin/pr-walkthrough*"]
     bin.install_symlink "#{libexec}/bin/pr-context"
   end
