@@ -9,21 +9,21 @@ class PrWalkthrough < Formula
 
   desc "Narrated, browser-based walkthrough of a GitHub pull request"
   homepage "https://github.com/mburgs/pr-walkthrough"
-  url "https://github.com/mburgs/homebrew-pr-walkthrough/releases/download/v2026.07.12.160757/pr_walkthrough_backend-0.1.0-py3-none-any.whl", using: :nounzip
-  version "2026.07.12.160757"
-  sha256 "9d33039a8ea9cf8d4f4d6432a8a2237a031540c217e52e7ad2d1128b48195947"
+  url "https://github.com/mburgs/homebrew-pr-walkthrough/releases/download/v2026.07.12.165656/pr_walkthrough_backend-0.1.0-py3-none-any.whl", using: :nounzip
+  version "2026.07.12.165656"
+  sha256 "d100c061d6f67935da84dd199b8f1994004875819e0917774695d20aecd06173"
   license "MIT"
 
   bottle do
-    root_url "https://github.com/mburgs/homebrew-pr-walkthrough/releases/download/v2026.07.12.160757"
-    sha256 cellar: :any_skip_relocation, arm64_sonoma: "2cac614729ea10abc3e6ad745863302db6a837bc506c620aff9bc8583947cf8a"
+    root_url "https://github.com/mburgs/homebrew-pr-walkthrough/releases/download/v2026.07.12.165656"
+    sha256 cellar: :any_skip_relocation, arm64_sonoma: "b64ce8eb301ea48f6e6e408da2c025e7c3009df30a09f1bccde7c8f89e7dfdf5"
   end
 
   # Apple-Silicon-only: local STT runs on MLX, which ships arm64-only wheels
   # and has no fallback engine (the app hard-fails at startup otherwise).
   depends_on arch: :arm64
-  depends_on "python@3.13"
   depends_on :macos
+  depends_on "python@3.13"
 
   def install
     # Source fallback (used only when no matching bottle is available). Create
@@ -33,7 +33,14 @@ class PrWalkthrough < Formula
     # source-builds everything — impossible for the mlx/torch stack. Invoking
     # pip directly resolves deps from PyPI as prebuilt wheels. `:nounzip` (on
     # the url) keeps the .whl staged as a file rather than unzipping it.
-    virtualenv_create(libexec, "python3.13")
+    #
+    # system_site_packages: false is load-bearing for bottling. With the
+    # default (true) venv, pip treats any dep already present in the build
+    # machine's global site-packages as satisfied and skips installing it into
+    # the venv — so the bottle (which tars only the venv) ships incomplete and
+    # imports like pydantic_core fail on other machines. An isolated venv
+    # forces the full dependency tree into the keg.
+    virtualenv_create(libexec, "python3.13", system_site_packages: false)
     system Formula["python@3.13"].opt_bin/"python3.13", "-m", "pip",
            "--python=#{libexec}/bin/python", "install", "--verbose",
            Dir["#{buildpath}/*.whl"].first
