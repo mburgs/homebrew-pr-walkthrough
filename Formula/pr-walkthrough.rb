@@ -10,14 +10,14 @@ class PrWalkthrough < Formula
 
   desc "Narrated, browser-based walkthrough of a GitHub pull request"
   homepage "https://github.com/mburgs/pr-walkthrough"
-  url "https://github.com/mburgs/homebrew-pr-walkthrough/releases/download/v2026.10.05.182024/pr_walkthrough_backend-0.1.0-py3-none-any.whl", using: :nounzip
-  version "2026.10.05.182024"
-  sha256 "5c48ff1112988ea6deeab78500bfef8360397db55d401b2b883a135d6ae00cc3"
+  url "https://github.com/mburgs/homebrew-pr-walkthrough/releases/download/v2026.10.05.182541/pr_walkthrough_backend-0.1.0-py3-none-any.whl", using: :nounzip
+  version "2026.10.05.182541"
+  sha256 "3b4db0f750915f382b9830517835369bab5cfbb056ee2914b7ff1c7998707bbd"
   license "MIT"
 
   bottle do
-    root_url "https://github.com/mburgs/homebrew-pr-walkthrough/releases/download/v2026.10.05.182024"
-    sha256 cellar: :any_skip_relocation, arm64_sonoma: "8cfee66f3431d8736a2535b541c737277784efa728b1e3fc91b4319fa28cea00"
+    root_url "https://github.com/mburgs/homebrew-pr-walkthrough/releases/download/v2026.10.05.182541"
+    sha256 cellar: :any_skip_relocation, arm64_sonoma: "76530a868d636a85e640d01f71334a8bfc57f822dc84469f2623dabeb7c22399"
   end
 
   # Apple-Silicon-only: local STT runs on MLX, which ships arm64-only wheels
