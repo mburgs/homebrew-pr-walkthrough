@@ -10,20 +10,21 @@ class PrWalkthrough < Formula
 
   desc "Narrated, browser-based walkthrough of a GitHub pull request"
   homepage "https://github.com/mburgs/pr-walkthrough"
-  url "https://github.com/mburgs/homebrew-pr-walkthrough/releases/download/v2026.10.10.045431/pr_walkthrough_backend-0.1.0-py3-none-any.whl", using: :nounzip
-  version "2026.10.10.045431"
-  sha256 "61f40c8c146f789cd71a8df281367a1a3ceab13a12c191f76ebe2cbd2eedd076"
+  url "https://github.com/mburgs/homebrew-pr-walkthrough/releases/download/v2026.10.12.201243/pr_walkthrough_backend-0.1.0-py3-none-any.whl", using: :nounzip
+  version "2026.10.12.201243"
+  sha256 "7d8ad9ccf8710469254d8dfbc614de8f578827172f8d18aa1786543c9a68ebc6"
   license "MIT"
 
   bottle do
-    root_url "https://github.com/mburgs/homebrew-pr-walkthrough/releases/download/v2026.10.10.045431"
-    sha256 cellar: :any_skip_relocation, arm64_sonoma: "4dc51f2e781445f039badb9c990b6c0fb2252b6c30564e9a90144490dbf25369"
+    root_url "https://github.com/mburgs/homebrew-pr-walkthrough/releases/download/v2026.10.12.201243"
+    sha256 cellar: :any_skip_relocation, arm64_sonoma: "97c7b3ae915d0e9f2ea8f323dc8cacd646ee9ff6ab83b824e3525fc9d952371c"
   end
 
   # Apple-Silicon-only: local STT runs on MLX, which ships arm64-only wheels
   # and has no fallback engine (the app hard-fails at startup otherwise).
   depends_on arch: :arm64
   depends_on :macos
+  depends_on "node"
   depends_on "python@3.13"
 
   def install
@@ -45,6 +46,11 @@ class PrWalkthrough < Formula
     system Formula["python@3.13"].opt_bin/"python3.13", "-m", "pip",
            "--python=#{libexec}/bin/python", "install", "--verbose",
            Dir["#{buildpath}/*.whl"].first
+    # TypeScript/JavaScript "find references": a pinned language server,
+    # vendored where the app looks first (`<sys.prefix>/lsp`), so a TS repo
+    # gets definitions and call sites with no further setup.
+    system "npm", "install", "--prefix", libexec/"lsp", "--no-audit", "--no-fund",
+           "typescript-language-server@6.0.2", "typescript@6.0.3"
     bin.install_symlink Dir["#{libexec}/bin/pr-walkthrough*"]
     bin.install_symlink "#{libexec}/bin/pr-context"
   end
