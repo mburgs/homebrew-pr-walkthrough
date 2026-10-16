@@ -8,31 +8,33 @@
 class PrWalkthrough < Formula
   include Language::Python::Virtualenv
 
-  desc "Narrated, browser-based walkthrough of a GitHub pull request"
+  desc "Guided, browser-based review of a GitHub pull request"
   homepage "https://github.com/mburgs/pr-walkthrough"
-  url "https://github.com/mburgs/homebrew-pr-walkthrough/releases/download/v2026.10.12.201243/pr_walkthrough_backend-0.1.0-py3-none-any.whl", using: :nounzip
-  version "2026.10.12.201243"
-  sha256 "7d8ad9ccf8710469254d8dfbc614de8f578827172f8d18aa1786543c9a68ebc6"
+  url "https://github.com/mburgs/homebrew-pr-walkthrough/releases/download/v2026.10.16.215311/pr_walkthrough_backend-0.1.0-py3-none-any.whl", using: :nounzip
+  version "2026.10.16.215311"
+  sha256 "59378f9d23c53fbcbb5c3ee25b98dedb8bd800019537951059d2aef8da559c1d"
   license "MIT"
 
   bottle do
-    root_url "https://github.com/mburgs/homebrew-pr-walkthrough/releases/download/v2026.10.12.201243"
-    sha256 cellar: :any_skip_relocation, arm64_sonoma: "97c7b3ae915d0e9f2ea8f323dc8cacd646ee9ff6ab83b824e3525fc9d952371c"
+    root_url "https://github.com/mburgs/homebrew-pr-walkthrough/releases/download/v2026.10.16.215311"
+    sha256 cellar: :any_skip_relocation, arm64_sonoma: "f05cc86795d6db8d217502008b50f2b19899de24dcc55c66d470fff41cfdcd3c"
   end
 
-  # Apple-Silicon-only: local STT runs on MLX, which ships arm64-only wheels
-  # and has no fallback engine (the app hard-fails at startup otherwise).
+  # Apple Silicon only, because that's the one bottle CI builds (arm64_sonoma)
+  # and a source install trips Homebrew's dylib relocation on the signed Rust
+  # wheels — see docs/DISTRIBUTION.md, "Why a bottle".
   depends_on arch: :arm64
   depends_on :macos
-  depends_on "node"
+  depends_on "node"        # the vendored TypeScript language server; tsx exhibits
   depends_on "python@3.13"
+  depends_on "ripgrep"     # the floor of related-code search; the app won't start without it
 
   def install
     # Source fallback (used only when no matching bottle is available). Create
     # the virtualenv, then install the wheel WITH its PyPI dependencies. We do
     # NOT use Homebrew's `venv.pip_install`: it forces `--no-deps
     # --no-binary=:all:` (the resource-vendoring model), which skips deps and
-    # source-builds everything — impossible for the mlx/torch stack. Invoking
+    # source-builds everything — impossible for compiled deps like pydantic-core. Invoking
     # pip directly resolves deps from PyPI as prebuilt wheels. `:nounzip` (on
     # the url) keeps the .whl staged as a file rather than unzipping it.
     #
@@ -62,7 +64,7 @@ class PrWalkthrough < Formula
         export ANTHROPIC_API_KEY=sk-ant-...
         gh auth login
 
-      Optional one-time setup (higher-quality TTS voice, STT warmup, LSPs):
+      Optional one-time setup (pyright for Python references, execution runners):
 
         pr-walkthrough setup
 
